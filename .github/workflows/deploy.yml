@@ -10,12 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Login to DockerHub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -23,16 +17,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu
+            cd /home/ubuntu/app
 
-            # clone or pull latest code
-            if [ ! -d "app" ]; then
-              git clone https://github.com/vishalyadav7565/Pathrider.git app
-            fi
-
-            cd app
-            git pull
-
-            # restart containers
             docker-compose down || true
             docker-compose up -d --build
