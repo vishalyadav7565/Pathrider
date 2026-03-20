@@ -9,35 +9,49 @@ export default function DriverRequests() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
   const socketRef = useRef(null);
-  const connectedRef = useRef(false);   // ✅ IMPORTANT
+  const connectedRef = useRef(false);
 
-  /* ================= INITIAL LOAD ================= */
+  /* ================= LOAD REQUESTS ================= */
+
   useEffect(() => {
 
-    api.get("/api/rides/driver/nearby-requests/")
-      .then((res) => {
+    const loadRequests = async () => {
+      try {
+
+        const res = await api.get("/rides/driver/nearby-requests/");
+
         setRequests(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+
+      } catch (err) {
+
+        console.error("Failed to load requests", err);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+    };
+
+    loadRequests();
 
   }, []);
 
-  /* ================= REAL-TIME SOCKET ================= */
+  /* ================= SOCKET ================= */
+
   useEffect(() => {
 
-    // 🚫 StrictMode duplicate WS stop
     if (connectedRef.current) return;
 
     connectedRef.current = true;
 
     socketRef.current = createDriverSocket((msg) => {
 
-      console.log("🔔 WS message:", msg);
+      console.log("🔔 WS:", msg);
 
-      /* REMOVE if accepted by other driver */
+      /* REMOVE if other driver accepted */
+
       if (msg.type === "REMOVE_BOOKING") {
 
         setRequests(prev =>
@@ -47,7 +61,8 @@ export default function DriverRequests() {
         return;
       }
 
-      /* NEW ride request */
+      /* NEW RIDE REQUEST */
+
       if (msg.type === "NEW_RIDE") {
 
         const booking = msg.data;
@@ -58,6 +73,7 @@ export default function DriverRequests() {
             return prev;
 
           return [booking, ...prev];
+
         });
 
       }
@@ -72,11 +88,12 @@ export default function DriverRequests() {
   }, []);
 
   /* ================= ACCEPT / REJECT ================= */
+
   const decide = async (bookingId, action) => {
 
     try {
 
-      await api.post("/api/rides/driver/decision/", {
+      await api.post("/rides/driver/decision/", {
         booking_id: bookingId,
         decision: action.toUpperCase()
       });
@@ -86,37 +103,37 @@ export default function DriverRequests() {
       );
 
       if (action === "accept") {
+
         navigate(`/driver/ride/${bookingId}`);
+
       }
 
     } catch (err) {
 
       if (err.response?.status === 409) {
+
         alert("Ride already taken by another driver");
+
       } else {
+
         alert("Something went wrong");
+
       }
 
     }
+
   };
 
   /* ================= UI ================= */
 
   if (loading)
-    return (
-      <p className="text-gray-500 p-4">
-        Loading nearby ride requests...
-      </p>
-    );
+    return <p className="p-4 text-gray-500">Loading requests...</p>;
 
   if (!requests.length)
-    return (
-      <p className="text-gray-500 p-4">
-        No new ride requests
-      </p>
-    );
+    return <p className="p-4 text-gray-500">No ride requests</p>;
 
   return (
+
     <div className="p-4">
 
       <h2 className="text-xl font-bold mb-4">
@@ -161,5 +178,7 @@ export default function DriverRequests() {
       ))}
 
     </div>
+
   );
+
 }

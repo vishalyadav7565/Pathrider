@@ -1,5 +1,8 @@
 import json
 from urllib.parse import parse_qs
+from asgiref.sync import sync_to_async
+from rides.models import Ride
+import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -43,7 +46,6 @@ def get_driver_by_user(user):
 class RideConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
-
         self.ride_id = self.scope["url_route"]["kwargs"]["ride_id"]
 
         query_string = parse_qs(self.scope["query_string"].decode())
@@ -69,6 +71,24 @@ class RideConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         print(f"🚘 Ride Connected: {self.user.id}")
+
+        # 🔥 SEND LAST DRIVER LOCATION ON RECONNECT
+        try:
+            ride = await sync_to_async(
+                Ride.objects.select_related("driver").get
+            )(id=self.ride_id)
+
+            driver = ride.driver
+
+            if driver and driver.latitude and driver.longitude:
+                await self.send(text_data=json.dumps({
+                    "type": "driver_location",
+                    "lat": float(driver.latitude),
+                    "lon": float(driver.longitude)
+                }))
+
+        except Exception as e:
+            print("Driver location restore failed:", e)
 
 
     async def disconnect(self, close_code):
@@ -124,7 +144,6 @@ class RideConsumer(AsyncWebsocketConsumer):
 # ======================================================
 # 🚖 DRIVER SOCKET
 # ======================================================
-
 class DriverConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
@@ -132,19 +151,24 @@ class DriverConsumer(AsyncWebsocketConsumer):
         query_string = parse_qs(self.scope["query_string"].decode())
         token = query_string.get("token")
 
+        # ❌ NEVER CLOSE WITHOUT ACCEPT
         if not token:
+            await self.accept()
             await self.close()
             return
 
         user = await get_user_from_token(token[0])
 
         if not user:
+            await self.accept()
             await self.close()
             return
 
         driver = await get_driver_by_user(user)
 
         if not driver:
+            print("❌ Driver profile not found")
+            await self.accept()
             await self.close()
             return
 
@@ -158,9 +182,10 @@ class DriverConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        print(f"🚖 Driver WS Connected: {driver.id}")
+
 
     async def disconnect(self, close_code):
-
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(
                 self.group_name,
@@ -169,5 +194,4 @@ class DriverConsumer(AsyncWebsocketConsumer):
 
 
     async def send_notification(self, event):
-
         await self.send(text_data=json.dumps(event["data"]))

@@ -3,30 +3,30 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 /* ================= USER ================= */
 import UserLogin from "./pages/UserLogin";
 import UserRegister from "./pages/UserRegister";
-import UserDashboard from "./Pages/UserDashboard";
+import UserDashboard from "./pages/UserDashboard";
 import UserBookings from "./components/UserBookings";
-import BookingDetail from "./Pages/BookingDetail";
+import BookingDetail from "../src/pages/BookingDetail";
 
 /* ================= DRIVER ================= */
 import DriverLogin from "./pages/DriverLogin";
 import DriverRegister from "./pages/DriverRegister";
 
-import DriverLayout from "./Pages/driver/DriverLayout";
-import DriverDashboard from "./Pages/driver/DriverDashboardPage";
-import DriverEarnings from "./Pages/driver/DriverEarnings";
-import DriverProfile from "./Pages/driver/DriverProfile";
-import DriverRideHistory from "./Pages/driver/DriverRideHistory";
-import DriverRequests from "./Pages/driver/DriverRequests";
-import DriverSettings from "./Pages/driver/DriverSettings";
+import DriverLayout from "./pages/driver/DriverLayout";
+import DriverDashboard from "./pages/driver/DriverDashboardPage";
+import DriverEarnings from "./pages/driver/DriverEarnings";
+import DriverProfile from "./pages/driver/DriverProfile";
+import DriverRideHistory from "./pages/driver/DriverRideHistory";
+import DriverRequests from "./pages/driver/DriverRequests";
+import DriverSettings from "./pages/driver/DriverSettings";
 
 /* ================= OTHER ================= */
 import ProtectedRoute from "./components/ProtectedRoute";
 import RidesPage from "./pages/RideBookingPage";
 import EventBookingPage from "./pages/EventBookingPage";
-import SubscriptionPage from "./Pages/SubscriptionPage";
-import DistanceFareCalculator from "./Pages/DistanceFareCalculator";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import DistanceFareCalculator from "./pages/DistanceFareCalculator";
 import LuxuryRidePage from "./pages/LuxuryRidePage";
-import DriverRidePage from "./Pages/driver/DriverRidePage";
+import DriverRidePage from "./pages/driver/DriverRidePage";
 
 function App() {
   return (
@@ -39,7 +39,8 @@ function App() {
         <Route path="/login/user" element={<UserLogin />} />
         <Route path="/user/register" element={<UserRegister />} />
 
-        <Route path="/driver/login" element={<DriverLogin />} />
+        <Route path="
+        " element={<DriverLogin />} />
         <Route path="/login/driver" element={<DriverLogin />} />
         <Route path="/register/driver" element={<DriverRegister />} />
 

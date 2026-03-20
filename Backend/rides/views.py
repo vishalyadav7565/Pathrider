@@ -1,4 +1,5 @@
 import os
+from urllib import request
 import numpy as np
 from threading import Timer
 from math import radians, sin, cos, sqrt, atan2
@@ -229,6 +230,12 @@ def occasion_booking(request):
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 class RideViewSet(ReadOnlyModelViewSet):
+
+    queryset = Ride.objects.select_related(
+        "driver",
+        "driver__user"
+    ).all()
+
     serializer_class = RideSerializer
     permission_classes = [IsAuthenticated]
 
@@ -238,10 +245,10 @@ class RideViewSet(ReadOnlyModelViewSet):
         # If user is a driver
         if Driver.objects.filter(user=user).exists():
             driver = Driver.objects.get(user=user)
-            return Ride.objects.filter(driver=driver).order_by("-created_at")
+            return self.queryset.filter(driver=driver).order_by("-created_at")
 
         # Normal customer
-        return Ride.objects.filter(customer=user).order_by("-created_at")
+        return self.queryset.filter(customer=user).order_by("-created_at")
 # ======================================================
 # DRIVER LOCATION UPDATE
 @api_view(["POST"])
@@ -267,13 +274,14 @@ def update_driver_location(request):
         channel_layer = get_channel_layer()
 
         async_to_sync(channel_layer.group_send)(
-            f"ride_{active_ride.id}",
-            {
-                "type": "driver_location",  # must match consumer
-                "lat": float(driver.latitude),
-                "lon": float(driver.longitude),
-            }
-        )
+    f"ride_{active_ride.id}",
+    {
+        "type": "broadcast_location",
+        "sender": "driver",
+        "lat": float(driver.latitude),
+        "lon": float(driver.longitude),
+    }
+)
 
     return Response({"status": "location updated"})
 
@@ -340,7 +348,10 @@ def driver_my_rides(request):
     if not hasattr(request.user, "driver_profile"):
         return Response({"error": "Not a driver"}, status=403)
 
-    rides = Ride.objects.filter(driver=request.user.driver_profile)
+    rides = Ride.objects.select_related(
+        "driver",
+        "driver__user"
+    ).filter(driver=request.user.driver_profile)
     return Response(RideSerializer(rides, many=True).data)
 
 
@@ -350,7 +361,14 @@ def driver_booking_detail(request, booking_id):
     if not hasattr(request.user, "driver_profile"):
         return Response({"error": "Not a driver"}, status=403)
 
-    ride = get_object_or_404(Ride, id=booking_id, driver=request.user.driver_profile)
+    ride = get_object_or_404(
+        Ride.objects.select_related(
+            "driver",
+            "driver__user"
+        ),
+        id=booking_id,
+        driver=request.user.driver_profile
+    )
     return Response(RideSerializer(ride).data)
 
 

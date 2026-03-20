@@ -1,37 +1,57 @@
 version: "3.9"
 
 services:
+
   db:
     image: mysql:8
     restart: always
     environment:
       MYSQL_DATABASE: pathrider
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: Ram@12345#
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+      timeout: 5s
+
+
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
 
   backend:
     build:
       context: ./Backend
-    command: >
-      sh -c "
-      python manage.py migrate &&
-      gunicorn core.wsgi:application --bind 0.0.0.0:8000
-      "
     volumes:
       - ./Backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      - DB_NAME=pathrider
-      - DB_USER=root
-      - DB_PASSWORD=root
-      - DB_HOST=db
-      - DB_PORT=3306
+      DB_NAME: pathrider
+      DB_USER: root
+      DB_PASSWORD: Ram@12345#
+      DB_HOST: db
+      DB_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
 
   frontend:
     build:
@@ -39,6 +59,8 @@ services:
       dockerfile: Dockerfile.frontend
     ports:
       - "3000:80"
+    environment:
+      VITE_ORS_API_KEY: ${VITE_ORS_API_KEY}
     depends_on:
       - backend
 

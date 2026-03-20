@@ -24,9 +24,10 @@ export default function DriverLiveTracker({ bookingId }) {
         const { latitude, longitude } = position.coords;
 
         try {
-          await API.post("/api/rides/driver/update-location/", {
+          await API.post("/rides/driver/update-location/", {
             latitude,
             longitude,
+            booking_id: bookingId
           });
         } catch (error) {
           console.error("❌ Failed to update driver location", error);

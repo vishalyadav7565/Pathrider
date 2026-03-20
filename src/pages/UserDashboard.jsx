@@ -61,7 +61,7 @@ const UserDashboard = () => {
     if (role !== "driver" || !driverId) return;
 
     // Use ws:// for local dev, wss:// for production if needed
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/driver/${driverId}/`);
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/driver/${driverId}/`);
 
     ws.onopen = () => {
       console.log(`✅ WebSocket connected for driver ${driverId}`);

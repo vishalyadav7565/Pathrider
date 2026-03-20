@@ -14,6 +14,9 @@ export default function BookingDetail() {
   const [route, setRoute] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔥 TOKEN STATE (WS RECONNECT FIX)
+  const [token, setToken] = useState(localStorage.getItem("accessToken"));
+
   const socketRef = useRef(null);
   const bookingRef = useRef(null);
   const watchIdRef = useRef(null);
@@ -28,12 +31,28 @@ export default function BookingDetail() {
     ringRef.current?.play().catch(() => {});
   };
 
+  /* ================= TOKEN CHANGE LISTENER ================= */
+  useEffect(() => {
+
+    const interval = setInterval(() => {
+      const newToken = localStorage.getItem("accessToken");
+
+      if (newToken !== token) {
+        console.log("🔄 Token Changed → Reconnecting WS");
+        setToken(newToken);
+      }
+
+    }, 1000);
+
+    return () => clearInterval(interval);
+
+  }, [token]);
+
   /* ================= FETCH BOOKING ================= */
   useEffect(() => {
 
     const fetchBooking = async () => {
       try {
-
         const res = await API.get(`/rides/bookings/${id}/`);
         setBooking(res.data);
         bookingRef.current = res.data;
@@ -86,9 +105,14 @@ export default function BookingDetail() {
   /* ================= SOCKET CONNECT ================= */
   useEffect(() => {
 
-    if (!id) return;
+    if (!id || !token) return;
 
-    socketRef.current?.close();
+    // 🔥 Close old socket on logout/login
+    if (socketRef.current) {
+      socketRef.current.onmessage = null;
+      socketRef.current.close();
+      socketRef.current = null;
+    }
 
     socketRef.current = createRideSocket(id, async (data) => {
 
@@ -100,9 +124,7 @@ export default function BookingDetail() {
         const driverLoc = {
           lat: data.lat,
           lon: data.lon,
-          name:
-            currentBooking?.assigned_driver?.name
-            || "Driver"
+          name: currentBooking?.assigned_driver?.name || "Driver"
         };
 
         setDriverLocation(driverLoc);
@@ -188,7 +210,7 @@ export default function BookingDetail() {
 
     };
 
-  }, [id]);
+  }, [id, token]);
 
   /* ================= UI ================= */
   if (loading)
@@ -200,7 +222,6 @@ export default function BookingDetail() {
   return (
     <div className="p-4 space-y-4 text-white">
 
-      {/* 🗺 LIVE MAP */}
       <RideMap
         pickup={{ lat: booking.pickup_lat, lon: booking.pickup_lon }}
         drop={{ lat: booking.drop_lat, lon: booking.drop_lon }}
@@ -208,7 +229,6 @@ export default function BookingDetail() {
         route={route}
       />
 
-      {/* 🚗 DRIVER CARD */}
       {(booking.assigned_driver || driverLocation) && (
         <DriverCard
           driver={{
@@ -220,14 +240,12 @@ export default function BookingDetail() {
         />
       )}
 
-      {/* 📊 INFO */}
       <div className="bg-[#1a1208] p-4 rounded-xl text-[#f0d78c] space-y-1">
         <p>📏 Distance: {booking.distance_km} km</p>
         <p>💰 Fare: ₹{booking.fare}</p>
         <p>📌 Status: {booking.status}</p>
       </div>
 
-      {/* 🔐 OTP */}
       {booking.ride_otp && (
         <div className="bg-black p-4 rounded-xl text-center border border-green-500/40">
           <p className="text-gray-400">Ride OTP</p>

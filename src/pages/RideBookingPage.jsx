@@ -143,7 +143,7 @@ export default function RideBookingPage() {
     }
 
     try {
-      const res = await API.post(`/rides/bookings/${bookingType}/`, {
+      const res = await API.post(`rides/bookings/${bookingType}/`, {
         pickup_lat: pickup.lat,
         pickup_lon: pickup.lon,
         drop_lat: drop.lat,

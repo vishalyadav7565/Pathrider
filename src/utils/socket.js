@@ -12,8 +12,8 @@ export const createDriverSocket = (onMessage) => {
     window.location.protocol === "https:" ? "wss" : "ws";
 
   const socket = new WebSocket(
-    `${protocol}://127.0.0.1:8000/ws/driver/?token=${token}`
-  );
+  `${protocol}://${window.location.host}/ws/driver/?token=${token}`
+);
 
   socket.onopen = () => {
     console.log("🚖 Driver WS Connected");
@@ -45,7 +45,7 @@ export const createRideSocket = (rideId, onMessage) => {
     window.location.protocol === "https:" ? "wss" : "ws";
 
   const socket = new WebSocket(
-    `${protocol}://127.0.0.1:8000/ws/ride/${rideId}/?token=${token}`
+    `${protocol}://${window.location.host}/ws/ride/${rideId}/?token=${token}`
   );
 
   socket.onopen = () => {
