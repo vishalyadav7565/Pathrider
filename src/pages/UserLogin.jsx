@@ -35,7 +35,7 @@ const UserLogin = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/users/user/login/verify-otp/",
+        "http://3.26.155.202:8000/api/users/user/login/verify-otp/",
         {
           phone: formData.phone,
           otp: formData.otp,

@@ -5,7 +5,7 @@ export default function DriverNotifications() {
 
 useEffect(() => {
   const driverId = localStorage.getItem("driver_id");
-  const ws = new WebSocket(`ws://127.0.0.1:8000/ws/driver/${driverId}/`);
+  const ws = new WebSocket(`ws://3.26.155.202:8000/ws/driver/${driverId}/`);
 
   ws.onmessage = e => {
     setNotifications(prev => [JSON.parse(e.data), ...prev]);

@@ -13,7 +13,7 @@ export default function LiveRideMap({ booking }) {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `ws://127.0.0.1:8000/ws/ride/${booking.id}/`
+      `ws://3.26.155.202:8000/ws/ride/${booking.id}/`
     );
 
     ws.onmessage = (e) => {
