@@ -32,7 +32,7 @@ const UserDashboard = () => {
         return;
       }
 
-      const res = await axios.get("http://127.0.0.1:8000/api/rides/bookings/", {
+      const res = await axios.get("http://3.26.155.202:8000/api/rides/bookings/", {
         headers: {
           Authorization: `Bearer ${token.trim()}`,
           "Content-Type": "application/json",

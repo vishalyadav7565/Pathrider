@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/", // Django backend URL
+  baseURL: "http://3.26.155.202:8000/api/", // Django backend URL
 });
 
 API.interceptors.request.use((config) => {
