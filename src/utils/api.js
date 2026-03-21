@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://3.26.155.202:8000/api/", // Django backend URL
+  baseURL: "/api/", // Django backend URL
 });
 
 // Add token automatically

@@ -11,7 +11,7 @@ const DriverLogin = () => {
   const navigate = useNavigate();
 
   const publicAxios = axios.create({
-    baseURL: "http://3.26.155.202:8000",
+    baseURL: "/api/",
   });
 
   // ✅ Step 1: Request OTP
