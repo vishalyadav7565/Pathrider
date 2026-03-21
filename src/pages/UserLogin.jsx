@@ -17,7 +17,7 @@ const UserLogin = () => {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://3.26.155.202:8000/api/users/user/login/request-otp/", {
+      const res = await axios.post("/api/users/user/login/request-otp/", {
         phone: formData.phone,
       });
 
@@ -35,7 +35,7 @@ const UserLogin = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://3.26.155.202:8000/api/users/user/login/verify-otp/",
+        "/api/users/user/login/verify-otp/",
         {
           phone: formData.phone,
           otp: formData.otp,
